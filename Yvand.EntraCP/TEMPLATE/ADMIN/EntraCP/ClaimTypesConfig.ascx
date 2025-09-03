@@ -248,6 +248,11 @@
         </td>
     </tr>
 </table>
+<div class="ms-descriptionText">
+    <asp:DropDownList ID="DdlWebApp" runat="server" AutoPostBack="true" OnSelectedIndexChanged="DdlWebApp_SelectedIndexChanged" />
+    <asp:Button ID="BtnAddConfig" runat="server" Text="Create configuration" OnClick="BtnAddConfig_Click" />
+    <asp:Button ID="BtnDeleteConfig" runat="server" Text="Delete configuration" OnClick="BtnDeleteConfig_Click" />
+</div>
 <div id="divMainContent">
     <asp:LinkButton ID="DeleteItemLink_" runat="server" Visible="false"></asp:LinkButton>
     <asp:LinkButton ID="UpdateItemLink_" runat="server" Visible="false"></asp:LinkButton>

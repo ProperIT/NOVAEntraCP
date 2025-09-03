@@ -42,6 +42,33 @@ namespace Yvand.EntraClaimsProvider.Administration
         protected global::System.Web.UI.WebControls.ValidationSummary ValSummary;
 
         /// <summary>
+        /// DdlWebApp control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList DdlWebApp;
+
+        /// <summary>
+        /// BtnAddConfig control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button BtnAddConfig;
+
+        /// <summary>
+        /// BtnDeleteConfig control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button BtnDeleteConfig;
+
+        /// <summary>
         /// DeleteItemLink_ control.
         /// </summary>
         /// <remarks>

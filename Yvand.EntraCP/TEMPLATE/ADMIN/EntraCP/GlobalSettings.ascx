@@ -133,6 +133,17 @@
     </tr>
 </table>
 <table border="0" cellspacing="0" cellpadding="0" width="100%">
+    <wssuc:InputFormSection Title="Web application" runat="server">
+        <Template_InputFormControls>
+            <tr>
+                <td>
+                    <asp:DropDownList ID="DdlWebApp" runat="server" AutoPostBack="true" OnSelectedIndexChanged="DdlWebApp_SelectedIndexChanged" />
+                    <asp:Button ID="BtnAddConfig" runat="server" Text="Create configuration" OnClick="BtnAddConfig_Click" />
+                    <asp:Button ID="BtnDeleteConfig" runat="server" Text="Delete configuration" OnClick="BtnDeleteConfig_Click" />
+                </td>
+            </tr>
+        </Template_InputFormControls>
+    </wssuc:InputFormSection>
     <wssuc:ButtonSection runat="server">
         <Template_Buttons>
             <asp:Button UseSubmitBehavior="false" runat="server" class="ms-ButtonHeightWidth" OnClick="BtnOK_Click" Text="<%$Resources:wss,multipages_okbutton_text%>" ID="BtnOKTop" AccessKey="<%$Resources:wss,okbutton_accesskey%>" />
