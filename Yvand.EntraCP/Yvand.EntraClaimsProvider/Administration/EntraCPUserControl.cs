@@ -53,7 +53,7 @@ namespace Yvand.EntraClaimsProvider.Administration
         /// <summary>
         /// Gets the SharePoint web application associated with the current configuration
         /// </summary>
-        protected SPWebApplication WebApplication => SPWebApplication.Lookup(WebApplicationID);
+        protected SPWebApplication WebApplication => SPWebService.ContentService.WebApplications.GetValue<SPWebApplication>(WebApplicationID);
 
         private EntraIDProviderConfiguration _Configuration;
         /// <summary>

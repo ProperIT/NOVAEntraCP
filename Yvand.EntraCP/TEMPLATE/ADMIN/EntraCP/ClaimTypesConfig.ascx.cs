@@ -109,9 +109,9 @@ namespace Yvand.EntraClaimsProvider.Administration
             DdlWebApp.Items.Clear();
             foreach (SPWebApplication wa in SPWebService.ContentService.WebApplications)
             {
-                DdlWebApp.Items.Add(new ListItem(wa.Name, wa.Id.ToString()));
+                DdlWebApp.Items.Add(new System.Web.UI.WebControls.ListItem(wa.Name, wa.Id.ToString()));
             }
-            ListItem selected = DdlWebApp.Items.FindByValue(WebApplicationID.ToString());
+            System.Web.UI.WebControls.ListItem selected = DdlWebApp.Items.FindByValue(WebApplicationID.ToString());
             if (selected != null)
             {
                 selected.Selected = true;
