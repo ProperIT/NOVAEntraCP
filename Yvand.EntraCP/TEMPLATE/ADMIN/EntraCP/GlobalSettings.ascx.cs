@@ -44,14 +44,31 @@ namespace Yvand.EntraClaimsProvider.Administration
         /// </summary>
         protected void Initialize()
         {
-            if (ValidatePrerequisite() != ConfigStatus.AllGood)
+            PopulateWebApplications();
+            ConfigStatus status = ValidatePrerequisite();
+
+            if (status == ConfigStatus.PersistedObjectNotFound)
+            {
+                LabelMessage.Text = "No configuration found for this web application.";
+                BtnDeleteConfig.Visible = false;
+                BtnAddConfig.Visible = true;
+                BtnOK.Enabled = false;
+                BtnOKTop.Enabled = false;
+                return;
+            }
+
+            if (status != ConfigStatus.AllGood)
             {
                 this.LabelErrorMessage.Text = base.MostImportantError;
                 this.BtnOK.Enabled = false;
                 this.BtnOKTop.Enabled = false;
+                BtnAddConfig.Visible = false;
+                BtnDeleteConfig.Visible = false;
                 return;
             }
 
+            BtnAddConfig.Visible = false;
+            BtnDeleteConfig.Visible = true;
             LabelMessage.Text = String.Format(TextSummaryPersistedObjectInformation, Configuration.Name, Configuration.Version, Configuration.Id);
             if (!this.IsPostBack)
             {
@@ -59,6 +76,42 @@ namespace Yvand.EntraClaimsProvider.Administration
                 PopulateGraphPropertiesLists();
                 PopulateFields();
             }
+        }
+
+        void PopulateWebApplications()
+        {
+            if (IsPostBack)
+            {
+                return;
+            }
+            DdlWebApp.Items.Clear();
+            foreach (SPWebApplication wa in SPWebService.ContentService.WebApplications)
+            {
+                DdlWebApp.Items.Add(new ListItem(wa.Name, wa.Id.ToString()));
+            }
+            ListItem selected = DdlWebApp.Items.FindByValue(WebApplicationID.ToString());
+            if (selected != null)
+            {
+                selected.Selected = true;
+            }
+        }
+
+        protected void DdlWebApp_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string url = SPUtility.GetServerRelativeUrlFromPrefixedUrl(Request.RawUrl);
+            Response.Redirect(url + "?WebAppId=" + DdlWebApp.SelectedValue);
+        }
+
+        protected void BtnAddConfig_Click(object sender, EventArgs e)
+        {
+            EntraCP.CreateConfiguration(WebApplication);
+            Response.Redirect(Request.RawUrl);
+        }
+
+        protected void BtnDeleteConfig_Click(object sender, EventArgs e)
+        {
+            EntraCP.DeleteConfiguration(WebApplication);
+            Response.Redirect(Request.RawUrl);
         }
 
         void PopulateConnectionsGrid()

@@ -24,6 +24,37 @@ namespace Yvand.EntraClaimsProvider.Administration
 
         public Guid ConfigurationID { get; set; } = Guid.Empty;
 
+        private Guid _webApplicationId = Guid.Empty;
+        /// <summary>
+        /// Gets or sets the identifier of the web application targeted by this page.
+        /// Defaults to the web application from the current context when not specified.
+        /// </summary>
+        public Guid WebApplicationID
+        {
+            get
+            {
+                if (_webApplicationId == Guid.Empty)
+                {
+                    string qsWebApp = this.Page?.Request?["WebAppId"];
+                    if (!String.IsNullOrEmpty(qsWebApp))
+                    {
+                        Guid.TryParse(qsWebApp, out _webApplicationId);
+                    }
+                    if (_webApplicationId == Guid.Empty && SPContext.Current?.Site != null)
+                    {
+                        _webApplicationId = SPContext.Current.Site.WebApplication.Id;
+                    }
+                }
+                return _webApplicationId;
+            }
+            set { _webApplicationId = value; }
+        }
+
+        /// <summary>
+        /// Gets the SharePoint web application associated with the current configuration
+        /// </summary>
+        protected SPWebApplication WebApplication => SPWebService.ContentService.WebApplications.GetValue<SPWebApplication>(WebApplicationID);
+
         private EntraIDProviderConfiguration _Configuration;
         /// <summary>
         /// Gets the persisted object which contains the configuration for AzureDCP
@@ -34,18 +65,13 @@ namespace Yvand.EntraClaimsProvider.Administration
             {
                 if (_Configuration == null)
                 {
-                    var configuration = EntraIDProviderConfiguration.GetGlobalConfiguration(this.ConfigurationID, true);
-                    if (configuration != null)
+                    SPWebApplication webApp = WebApplication;
+                    if (webApp == null)
                     {
-                        _Configuration = configuration;
-                        Settings = (EntraIDProviderSettings)configuration.Settings;
+                        return null;
                     }
-                }
-                if (_Configuration == null)
-                {
-                    SPContext.Current.Web.AllowUnsafeUpdates = true;
-                    var configuration = EntraIDProviderConfiguration.CreateGlobalConfiguration(this.ConfigurationID, this.ConfigurationName, this.ClaimsProviderName);
-                    SPContext.Current.Web.AllowUnsafeUpdates = false;
+                    Guid baseConfigId = this.ConfigurationID;
+                    var configuration = EntraIDProviderConfiguration.GetWebApplicationConfiguration(baseConfigId, webApp.Id, true);
                     if (configuration != null)
                     {
                         _Configuration = configuration;

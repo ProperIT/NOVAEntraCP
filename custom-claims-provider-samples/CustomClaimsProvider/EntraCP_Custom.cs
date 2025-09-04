@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Yvand.EntraClaimsProvider;
 using Yvand.EntraClaimsProvider.Configuration;
 
@@ -20,7 +21,7 @@ namespace CustomClaimsProvider
         {
         }
 
-        public override IEntraIDProviderSettings GetSettings()
+        public override IEntraIDProviderSettings GetSettings(Uri context = null)
         {
             ClaimsProviderSettings settings = ClaimsProviderSettings.GetDefaultSettings(ClaimsProviderName);
             EntraIDTenant tenant = new EntraIDTenant

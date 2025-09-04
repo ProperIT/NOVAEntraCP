@@ -125,6 +125,21 @@ namespace Yvand.EntraClaimsProvider
         }
 
         /// <summary>
+        /// Returns the configuration for a specific web application
+        /// </summary>
+        /// <param name="webApp">Web application</param>
+        /// <param name="initializeLocalConfiguration">Set to true to initialize local settings</param>
+        /// <returns></returns>
+        public static EntraIDProviderConfiguration GetConfiguration(SPWebApplication webApp, bool initializeLocalConfiguration = false)
+        {
+            if (webApp == null)
+            {
+                return null;
+            }
+            return EntraIDProviderConfiguration.GetWebApplicationConfiguration(new Guid(ClaimsProviderConstants.CONFIGURATION_ID), webApp.Id, initializeLocalConfiguration);
+        }
+
+        /// <summary>
         /// Creates a configuration for EntraCP. This will delete any existing configuration which may already exist
         /// </summary>
         /// <returns></returns>
@@ -132,6 +147,20 @@ namespace Yvand.EntraClaimsProvider
         {
             EntraIDProviderConfiguration configuration = EntraIDProviderConfiguration.CreateGlobalConfiguration(new Guid(ClaimsProviderConstants.CONFIGURATION_ID), ClaimsProviderConstants.CONFIGURATION_NAME, EntraCP.ClaimsProviderName);
             return configuration;
+        }
+
+        /// <summary>
+        /// Creates a configuration for a specific web application. This will delete any existing configuration which may already exist for that web application.
+        /// </summary>
+        /// <param name="webApp">Web application</param>
+        /// <returns></returns>
+        public static EntraIDProviderConfiguration CreateConfiguration(SPWebApplication webApp)
+        {
+            if (webApp == null)
+            {
+                return null;
+            }
+            return EntraIDProviderConfiguration.CreateWebApplicationConfiguration(new Guid(ClaimsProviderConstants.CONFIGURATION_ID), ClaimsProviderConstants.CONFIGURATION_NAME, EntraCP.ClaimsProviderName, webApp);
         }
 
         /// <summary>
@@ -144,6 +173,19 @@ namespace Yvand.EntraClaimsProvider
             {
                 configuration.Delete();
             }
+        }
+
+        /// <summary>
+        /// Deletes the configuration for a specific web application
+        /// </summary>
+        /// <param name="webApp">Web application</param>
+        public static void DeleteConfiguration(SPWebApplication webApp)
+        {
+            if (webApp == null)
+            {
+                return;
+            }
+            EntraIDProviderConfiguration.DeleteWebApplicationConfiguration(new Guid(ClaimsProviderConstants.CONFIGURATION_ID), webApp.Id);
         }
         #endregion
 
@@ -169,7 +211,7 @@ namespace Yvand.EntraClaimsProvider
             this.Lock_LocalConfigurationRefresh.EnterWriteLock();
             try
             {
-                IEntraIDProviderSettings settings = this.GetSettings();
+                IEntraIDProviderSettings settings = this.GetSettings(context);
                 if (settings == null)
                 {
                     return false;
@@ -209,8 +251,9 @@ namespace Yvand.EntraClaimsProvider
         /// <summary>
         /// Returns the settings to use
         /// </summary>
+        /// <param name="context">The URI of the current site, or null</param>
         /// <returns></returns>
-        public virtual IEntraIDProviderSettings GetSettings()
+        public virtual IEntraIDProviderSettings GetSettings(Uri context = null)
         {
             if (this.CustomSettings != null)
             {
@@ -218,10 +261,25 @@ namespace Yvand.EntraClaimsProvider
             }
 
             IEntraIDProviderSettings persistedSettings = null;
-            EntraIDProviderConfiguration PersistedConfiguration = EntraIDProviderConfiguration.GetGlobalConfiguration(new Guid(ClaimsProviderConstants.CONFIGURATION_ID));
-            if (PersistedConfiguration != null)
+            EntraIDProviderConfiguration persistedConfiguration = null;
+
+            if (context != null)
             {
-                persistedSettings = PersistedConfiguration.Settings;
+                SPWebApplication webApp = SPWebApplication.Lookup(context);
+                if (webApp != null)
+                {
+                    persistedConfiguration = EntraIDProviderConfiguration.GetWebApplicationConfiguration(new Guid(ClaimsProviderConstants.CONFIGURATION_ID), webApp.Id);
+                }
+            }
+
+            if (persistedConfiguration == null)
+            {
+                persistedConfiguration = EntraIDProviderConfiguration.GetGlobalConfiguration(new Guid(ClaimsProviderConstants.CONFIGURATION_ID));
+            }
+
+            if (persistedConfiguration != null)
+            {
+                persistedSettings = persistedConfiguration.Settings;
             }
             return persistedSettings;
         }
