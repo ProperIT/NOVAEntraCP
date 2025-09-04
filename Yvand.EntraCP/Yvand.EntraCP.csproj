@@ -110,7 +110,6 @@
     <None Include="EntraCP.Administration.Links\SharePointProjectItem.spdata">
       <SharePointProjectItemId>{c15a0bf3-126a-42e6-af6b-5880f2e9af42}</SharePointProjectItemId>
     </None>
-    <None Include="Yvand.EntraCP.snk" />
     <None Include="Features\Yvand.EntraCP\Yvand.EntraCP.feature">
       <FeatureId>{70b104e2-19df-4cb1-9802-c98eaf14d84e}</FeatureId>
     </None>
