@@ -16,6 +16,7 @@ namespace Yvand.EntraClaimsProvider
         /// <summary>
         /// Gets the first SharePoint TrustedLoginProvider that has its property ClaimProviderName equals to <paramref name="claimProviderName"/>
         /// LIMITATION: The same claims provider (uniquely identified by its name) cannot be associated to multiple TrustedLoginProvider because at runtime there is no way to determine what TrustedLoginProvider is currently calling
+        /// If the Claims configuration is identical for multiple TrustedLoginProvider, then it is possible to use the same ClaimsProviderName for multiple TrustedLoginProvider, but this is not recommended.
         /// </summary>
         /// <param name="claimProviderName"></param>
         /// <returns></returns>
@@ -28,16 +29,16 @@ namespace Yvand.EntraClaimsProvider
 
             var lp = SPSecurityTokenServiceManager.Local.TrustedLoginProviders.Where(x => String.Equals(x.ClaimProviderName, claimProviderName, StringComparison.OrdinalIgnoreCase));
 
-            if (lp != null && lp.Count() == 1)
+            if (lp != null && lp.Any())
             {
                 return lp.First();
             }
 
-            if (lp != null && lp.Count() > 1)
-            {
-                Logger.Log($"[{claimProviderName}] Cannot continue because '{claimProviderName}' is set with multiple SPTrustedIdentityTokenIssuer", TraceSeverity.Unexpected, TraceCategory.Core);
-            }
-            Logger.Log($"[{claimProviderName}] Cannot continue because '{claimProviderName}' is not set with any SPTrustedIdentityTokenIssuer.\r\nVisit {ClaimsProviderConstants.PUBLICSITEURL} for more information.", TraceSeverity.High, TraceCategory.Core);
+            //if (lp != null && lp.Count() > 1)
+            //{
+            //    Logger.Log($"[{claimProviderName}] Cannot continue because '{claimProviderName}' is set with multiple SPTrustedIdentityTokenIssuer", TraceSeverity.Unexpected, TraceCategory.Core);
+            //}
+            //Logger.Log($"[{claimProviderName}] Cannot continue because '{claimProviderName}' is not set with any SPTrustedIdentityTokenIssuer.\r\nVisit {ClaimsProviderConstants.PUBLICSITEURL} for more information.", TraceSeverity.High, TraceCategory.Core);
             return null;
         }
 
