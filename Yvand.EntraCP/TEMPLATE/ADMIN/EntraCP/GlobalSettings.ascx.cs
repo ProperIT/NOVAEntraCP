@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Yvand.EntraClaimsProvider.Configuration;
@@ -98,8 +99,12 @@ namespace Yvand.EntraClaimsProvider.Administration
 
         protected void DdlWebApp_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string url = SPUtility.GetServerRelativeUrlFromPrefixedUrl(Request.RawUrl);
-            Response.Redirect(url + "?WebAppId=" + DdlWebApp.SelectedValue);
+            var uriBuilder = new UriBuilder(Request.Url);
+            var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
+            query.Set("WebAppId", DdlWebApp.SelectedValue);
+            uriBuilder.Query = query.ToString();
+            string url = SPUtility.GetServerRelativeUrlFromPrefixedUrl(uriBuilder.Uri.PathAndQuery);
+            Response.Redirect(url);
         }
 
         protected void BtnAddConfig_Click(object sender, EventArgs e)

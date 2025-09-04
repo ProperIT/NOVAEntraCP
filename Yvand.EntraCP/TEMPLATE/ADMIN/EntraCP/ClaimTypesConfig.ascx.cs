@@ -8,6 +8,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Yvand.EntraClaimsProvider;
@@ -120,8 +121,12 @@ namespace Yvand.EntraClaimsProvider.Administration
 
         protected void DdlWebApp_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string url = SPUtility.GetServerRelativeUrlFromPrefixedUrl(Request.RawUrl);
-            Response.Redirect(url + "?WebAppId=" + DdlWebApp.SelectedValue);
+            var uriBuilder = new UriBuilder(Request.Url);
+            var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
+            query.Set("WebAppId", DdlWebApp.SelectedValue);
+            uriBuilder.Query = query.ToString();
+            string url = SPUtility.GetServerRelativeUrlFromPrefixedUrl(uriBuilder.Uri.PathAndQuery);
+            Response.Redirect(url);
         }
 
         protected void BtnAddConfig_Click(object sender, EventArgs e)
