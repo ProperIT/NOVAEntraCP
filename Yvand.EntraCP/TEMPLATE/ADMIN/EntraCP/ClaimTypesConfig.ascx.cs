@@ -1,11 +1,14 @@
 ﻿using Microsoft.Graph.Models;
 using Microsoft.SharePoint.WebControls;
+using Microsoft.SharePoint.Administration;
+using Microsoft.SharePoint.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Yvand.EntraClaimsProvider;
@@ -43,16 +46,30 @@ namespace Yvand.EntraClaimsProvider.Administration
         /// </summary>
         protected void Initialize()
         {
+            PopulateWebApplications();
             ConfigStatus status = ValidatePrerequisite();
+            if (status == ConfigStatus.PersistedObjectNotFound)
+            {
+                this.LabelMessage.Text = "No configuration found for this web application.";
+                this.HideAllContent = true;
+                BtnAddConfig.Visible = true;
+                BtnDeleteConfig.Visible = false;
+                return;
+            }
+
             if (status != ConfigStatus.AllGood && status != ConfigStatus.NoIdentityClaimType)
             {
                 this.LabelErrorMessage.Text = base.MostImportantError;
                 this.HideAllContent = true;
                 this.BtnCreateNewItem.Visible = false;
+                BtnAddConfig.Visible = false;
+                BtnDeleteConfig.Visible = false;
                 return;
             }
 
             TrustName = SPTrust.Name;
+            BtnAddConfig.Visible = false;
+            BtnDeleteConfig.Visible = true;
             if (!this.IsPostBack)
             {
                 // NEW ITEM FORM
@@ -77,14 +94,51 @@ namespace Yvand.EntraClaimsProvider.Administration
                 {
                     string prop = ((System.Reflection.FieldInfo)field).Name;
                     if (Utils.GetDirectoryObjectPropertyValue(new User(), prop) == null) { continue; }
-                    //if (Utils.GetGraphPropertyValue(new Group(), prop) == null) continue;
-                    //if (Utils.GetGraphPropertyValue(new Role(), prop) == null) continue;
-
                     DdlNewGraphProperty.Items.Add(prop);
                     DdlNewGraphPropertyToDisplay.Items.Add(prop);
                 }
             }
             BuildAttributesListTable(this.IsPostBack);
+        }
+
+        void PopulateWebApplications()
+        {
+            if (IsPostBack)
+            {
+                return;
+            }
+            DdlWebApp.Items.Clear();
+            foreach (SPWebApplication wa in SPWebService.ContentService.WebApplications)
+            {
+                DdlWebApp.Items.Add(new ListItem(wa.Name, wa.Id.ToString()));
+            }
+            ListItem selected = DdlWebApp.Items.FindByValue(WebApplicationID.ToString());
+            if (selected != null)
+            {
+                selected.Selected = true;
+            }
+        }
+
+        protected void DdlWebApp_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var uriBuilder = new UriBuilder(Request.Url);
+            var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
+            query.Set("WebAppId", DdlWebApp.SelectedValue);
+            uriBuilder.Query = query.ToString();
+            string url = SPUtility.GetServerRelativeUrlFromPrefixedUrl(uriBuilder.Uri.PathAndQuery);
+            Response.Redirect(url);
+        }
+
+        protected void BtnAddConfig_Click(object sender, EventArgs e)
+        {
+            EntraCP.CreateConfiguration(WebApplication);
+            Response.Redirect(Request.RawUrl);
+        }
+
+        protected void BtnDeleteConfig_Click(object sender, EventArgs e)
+        {
+            EntraCP.DeleteConfiguration(WebApplication);
+            Response.Redirect(Request.RawUrl);
         }
 
         /// <summary>

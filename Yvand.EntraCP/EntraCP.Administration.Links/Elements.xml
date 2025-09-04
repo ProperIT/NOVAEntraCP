@@ -12,7 +12,7 @@
       Id="EntraCPSettings"
       GroupId="EntraCP"
       Location="Microsoft.SharePoint.Administration.Security"
-      Title="Global configuration"
+      Title="Configuration"
       Sequence="10">
     <UrlAction Url="/_admin/EntraCP/GlobalSettings.aspx" />
   </CustomAction>

@@ -766,5 +766,80 @@ namespace Yvand.EntraClaimsProvider.Configuration
             Logger.Log($"Created configuration '{configurationName}' with Id {globalConfiguration.Id}", TraceSeverity.High, TraceCategory.Core);
             return globalConfiguration;
         }
+
+        /// <summary>
+        /// Generates a deterministic configuration ID based on a base identifier and the web application identifier
+        /// </summary>
+        /// <param name="baseConfigurationId">Base configuration identifier</param>
+        /// <param name="webAppId">Identifier of the web application</param>
+        /// <returns>Deterministic GUID for the web application configuration</returns>
+        private static Guid GetWebAppSpecificId(Guid baseConfigurationId, Guid webAppId)
+        {
+            byte[] baseBytes = baseConfigurationId.ToByteArray();
+            byte[] webBytes = webAppId.ToByteArray();
+            byte[] result = new byte[16];
+            for (int i = 0; i < 16; i++)
+            {
+                result[i] = (byte)(baseBytes[i] ^ webBytes[i]);
+            }
+            return new Guid(result);
+        }
+
+        /// <summary>
+        /// Returns the configuration scoped to a specific web application
+        /// </summary>
+        /// <param name="baseConfigurationId">Base identifier of the configuration</param>
+        /// <param name="webAppId">Identifier of the web application</param>
+        /// <param name="initializeLocalSettings">Set to true to initialize the Settings property</param>
+        /// <returns>The configuration for the specified web application</returns>
+        public static EntraIDProviderConfiguration GetWebApplicationConfiguration(Guid baseConfigurationId, Guid webAppId, bool initializeLocalSettings = false)
+        {
+            Guid configurationId = GetWebAppSpecificId(baseConfigurationId, webAppId);
+            EntraIDProviderConfiguration configuration = GetGlobalConfiguration(configurationId, initializeLocalSettings);
+            return configuration;
+        }
+
+        /// <summary>
+        /// Deletes the configuration scoped to a specific web application
+        /// </summary>
+        /// <param name="baseConfigurationId">Base identifier of the configuration</param>
+        /// <param name="webAppId">Identifier of the web application</param>
+        public static void DeleteWebApplicationConfiguration(Guid baseConfigurationId, Guid webAppId)
+        {
+            Guid configurationId = GetWebAppSpecificId(baseConfigurationId, webAppId);
+            DeleteGlobalConfiguration(configurationId);
+        }
+
+        /// <summary>
+        /// Creates a configuration scoped to a specific web application. This will delete any existing configuration for that web application.
+        /// </summary>
+        /// <param name="baseConfigurationId">Base identifier of the configuration</param>
+        /// <param name="configurationName">Name of the new configuration</param>
+        /// <param name="claimsProviderName">Claims provider associated with this configuration</param>
+        /// <param name="webApp">Web application where the configuration will be stored</param>
+        /// <returns>The newly created configuration</returns>
+        public static EntraIDProviderConfiguration CreateWebApplicationConfiguration(Guid baseConfigurationId, string configurationName, string claimsProviderName, SPWebApplication webApp)
+        {
+            if (webApp == null)
+            {
+                throw new ArgumentNullException(nameof(webApp));
+            }
+            Guid configurationId = GetWebAppSpecificId(baseConfigurationId, webApp.Id);
+
+            EntraIDProviderConfiguration existingConfig = GetGlobalConfiguration(configurationId);
+            if (existingConfig != null)
+            {
+                DeleteGlobalConfiguration(configurationId);
+            }
+
+            Logger.Log($"Creating configuration '{configurationName}' for web application '{webApp.Name}' with Id {configurationId}...", TraceSeverity.VerboseEx, TraceCategory.Core);
+            EntraIDProviderConfiguration configuration = new EntraIDProviderConfiguration(configurationName, webApp, claimsProviderName);
+            IEntraIDProviderSettings defaultSettings = configuration.GetDefaultSettings();
+            configuration.ApplySettings(defaultSettings, false);
+            configuration.Id = configurationId;
+            configuration.Update(true);
+            Logger.Log($"Created configuration '{configurationName}' for web application '{webApp.Name}' with Id {configuration.Id}", TraceSeverity.High, TraceCategory.Core);
+            return configuration;
+        }
     }
 }
