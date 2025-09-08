@@ -58,7 +58,7 @@ namespace Yvand.EntraClaimsProvider.Logging
     /// </summary>
     public class Logger : SPDiagnosticsServiceBase
     {
-        static string DiagnosticsAreaName = EntraCP.ClaimsProviderName;
+        static string DiagnosticsAreaName = EntraCP.DefaultClaimsProviderName;
         public override string DisplayName { get { return DiagnosticsAreaName; } }
         public Logger() : base(DiagnosticsAreaName, SPFarm.Local) { }
         public Logger(string name, SPFarm farm) : base(name, farm) { }

@@ -51,7 +51,8 @@ namespace Yvand.EntraClaimsProvider
 
     public class EntraCP : SPClaimProvider
     {
-        public static string ClaimsProviderName => "EntraCP";
+        public const string DefaultClaimsProviderName = "EntraCP";
+        public string ClaimsProviderName { get; private set; }
         public override string Name => ClaimsProviderName;
         public override bool SupportsEntityInformation => true;
         public override bool SupportsHierarchy => true;
@@ -102,6 +103,7 @@ namespace Yvand.EntraClaimsProvider
 
         public EntraCP(string displayName) : base(displayName)
         {
+            this.ClaimsProviderName = displayName;
             this.GraphEventsListener = new AzureEventSourceListener((args, message) =>
             {
                 if (args.EventSource.Name == "Azure-Identity")
@@ -114,11 +116,12 @@ namespace Yvand.EntraClaimsProvider
 
         public EntraCP(string displayName, IClaimsProviderSettings customSettings) : base(displayName)
         {
+            this.ClaimsProviderName = displayName;
             this.CustomSettings = customSettings;
         }
 
         #region ManageConfiguration
-        public static EntraIDProviderConfiguration GetConfiguration(bool initializeLocalConfiguration = false)
+        public static EntraIDProviderConfiguration GetConfiguration(string claimsProviderName, bool initializeLocalConfiguration = false)
         {
             EntraIDProviderConfiguration configuration = EntraIDProviderConfiguration.GetGlobalConfiguration(new Guid(ClaimsProviderConstants.CONFIGURATION_ID), initializeLocalConfiguration);
             return configuration;
@@ -130,7 +133,7 @@ namespace Yvand.EntraClaimsProvider
         /// <param name="webApp">Web application</param>
         /// <param name="initializeLocalConfiguration">Set to true to initialize local settings</param>
         /// <returns></returns>
-        public static EntraIDProviderConfiguration GetConfiguration(SPWebApplication webApp, bool initializeLocalConfiguration = false)
+        public static EntraIDProviderConfiguration GetConfiguration(string claimsProviderName, SPWebApplication webApp, bool initializeLocalConfiguration = false)
         {
             if (webApp == null)
             {
@@ -143,9 +146,9 @@ namespace Yvand.EntraClaimsProvider
         /// Creates a configuration for EntraCP. This will delete any existing configuration which may already exist
         /// </summary>
         /// <returns></returns>
-        public static EntraIDProviderConfiguration CreateConfiguration()
+        public static EntraIDProviderConfiguration CreateConfiguration(string claimsProviderName)
         {
-            EntraIDProviderConfiguration configuration = EntraIDProviderConfiguration.CreateGlobalConfiguration(new Guid(ClaimsProviderConstants.CONFIGURATION_ID), ClaimsProviderConstants.CONFIGURATION_NAME, EntraCP.ClaimsProviderName);
+            EntraIDProviderConfiguration configuration = EntraIDProviderConfiguration.CreateGlobalConfiguration(new Guid(ClaimsProviderConstants.CONFIGURATION_ID), ClaimsProviderConstants.CONFIGURATION_NAME, claimsProviderName);
             return configuration;
         }
 
@@ -154,19 +157,19 @@ namespace Yvand.EntraClaimsProvider
         /// </summary>
         /// <param name="webApp">Web application</param>
         /// <returns></returns>
-        public static EntraIDProviderConfiguration CreateConfiguration(SPWebApplication webApp)
+        public static EntraIDProviderConfiguration CreateConfiguration(string claimsProviderName, SPWebApplication webApp)
         {
             if (webApp == null)
             {
                 return null;
             }
-            return EntraIDProviderConfiguration.CreateWebApplicationConfiguration(new Guid(ClaimsProviderConstants.CONFIGURATION_ID), ClaimsProviderConstants.CONFIGURATION_NAME, EntraCP.ClaimsProviderName, webApp);
+            return EntraIDProviderConfiguration.CreateWebApplicationConfiguration(new Guid(ClaimsProviderConstants.CONFIGURATION_ID), ClaimsProviderConstants.CONFIGURATION_NAME, claimsProviderName, webApp);
         }
 
         /// <summary>
         /// Deletes the configuration for EntraCP
         /// </summary>
-        public static void DeleteConfiguration()
+        public static void DeleteConfiguration(string claimsProviderName)
         {
             EntraIDProviderConfiguration configuration = EntraIDProviderConfiguration.GetGlobalConfiguration(new Guid(ClaimsProviderConstants.CONFIGURATION_ID));
             if (configuration != null)
@@ -179,7 +182,7 @@ namespace Yvand.EntraClaimsProvider
         /// Deletes the configuration for a specific web application
         /// </summary>
         /// <param name="webApp">Web application</param>
-        public static void DeleteConfiguration(SPWebApplication webApp)
+        public static void DeleteConfiguration(string claimsProviderName, SPWebApplication webApp)
         {
             if (webApp == null)
             {
@@ -427,7 +430,7 @@ namespace Yvand.EntraClaimsProvider
                 return;
             }
 
-            using (new SPMonitoredScope($"[{ClaimsProviderName}] Augmentation for user \"{decodedEntity.Value}", 3000))
+            using (new SPMonitoredScope($"[{this.Name}] Augmentation for user \"{decodedEntity.Value}\"", 3000))
             {
                 if (!ValidateSettings(context)) { return; }
                 this.Lock_LocalConfigurationRefresh.EnterReadLock();

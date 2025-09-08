@@ -166,7 +166,7 @@ namespace Yvand.EntraClaimsProvider.Configuration
                 catch (CryptographicException ex)
                 {
                     // It may fail with CryptographicException: The system cannot find the file specified, but it does not have any impact
-                    Logger.LogException(EntraCP.ClaimsProviderName, $"while deserializating the certificate for tenant '{this.Name}'.", TraceCategory.Core, ex);
+                    Logger.LogException(EntraCP.DefaultClaimsProviderName, $"while deserializating the certificate for tenant '{this.Name}'.", TraceCategory.Core, ex);
                 }
             }
         }
@@ -178,17 +178,17 @@ namespace Yvand.EntraClaimsProvider.Configuration
         {
             if (String.IsNullOrWhiteSpace(this.ClientSecret) && this.ClientCertificateWithPrivateKey == null)
             {
-                Logger.Log($"[{EntraCP.ClaimsProviderName}] Cannot initialize authentication for tenant {this.Name} because both properties {nameof(ClientSecret)} and {nameof(ClientCertificateWithPrivateKey)} are not set.", TraceSeverity.Unexpected, TraceCategory.Configuration);
+                Logger.Log($"[{EntraCP.DefaultClaimsProviderName}] Cannot initialize authentication for tenant {this.Name} because both properties {nameof(ClientSecret)} and {nameof(ClientCertificateWithPrivateKey)} are not set.", TraceSeverity.Unexpected, TraceCategory.Configuration);
                 return;
             }
             if (String.IsNullOrWhiteSpace(this.ClientId))
             {
-                Logger.Log($"[{EntraCP.ClaimsProviderName}] Cannot initialize authentication for tenant {this.Name} because the property {nameof(ClientId)} is not set.", TraceSeverity.Unexpected, TraceCategory.Configuration);
+                Logger.Log($"[{EntraCP.DefaultClaimsProviderName}] Cannot initialize authentication for tenant {this.Name} because the property {nameof(ClientId)} is not set.", TraceSeverity.Unexpected, TraceCategory.Configuration);
                 return;
             }
             if (String.IsNullOrWhiteSpace(this.Name))
             {
-                Logger.Log($"[{EntraCP.ClaimsProviderName}] Cannot initialize authentication because the property {nameof(Name)} of current tenant is not set.", TraceSeverity.Unexpected, TraceCategory.Configuration);
+                Logger.Log($"[{EntraCP.DefaultClaimsProviderName}] Cannot initialize authentication because the property {nameof(Name)} of current tenant is not set.", TraceSeverity.Unexpected, TraceCategory.Configuration);
                 return;
             }
 
@@ -250,7 +250,7 @@ namespace Yvand.EntraClaimsProvider.Configuration
             HttpClient httpClient = GraphClientFactory.Create(handlers: handlers, proxy: webProxy, nationalCloud: cloudInstanceSettings.NameInGraphCore);
             httpClient.Timeout = TimeSpan.FromMilliseconds(requestsTimeout);
             this.GraphService = new GraphServiceClient(httpClient, tokenCredential, new[] { cloudInstanceSettings.GraphScope });
-            Logger.Log($"[{EntraCP.ClaimsProviderName}] Initialized authentication for tenant \"{this.Name}\" on cloud instance \"{cloudInstanceSettings.Name}\" (authority \"{cloudInstanceSettings.Authority}\" and scope \"{cloudInstanceSettings.GraphScope}\").", TraceSeverity.High, TraceCategory.Configuration);
+            Logger.Log($"[{EntraCP.DefaultClaimsProviderName}] Initialized authentication for tenant \"{this.Name}\" on cloud instance \"{cloudInstanceSettings.Name}\" (authority \"{cloudInstanceSettings.Authority}\" and scope \"{cloudInstanceSettings.GraphScope}\").", TraceSeverity.High, TraceCategory.Configuration);
         }
 
         public async Task<bool> TestConnectionAsync(string proxyAddress)
