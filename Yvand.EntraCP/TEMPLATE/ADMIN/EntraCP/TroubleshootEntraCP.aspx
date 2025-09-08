@@ -28,7 +28,7 @@
             public static string Input = "yvand";
 
             public static string context = SPContext.Current.Web.Url;
-            public static string ClaimsProviderName = "EntraCP";
+            public static string ClaimsProviderName = EntraCP.DefaultClaimsProviderName;
             public static string IconSuccess = "<span class='ms-status-iconSpan'><img src='/_layouts/15/images/kpinormal-0.gif'></span>";
             public static string IconWarning = "<span class='ms-status-iconSpan'><img src='/_layouts/15/images/kpinormal-1.gif'></span>";
             public static string IconError = "<span class='ms-status-iconSpan'><img src='/_layouts/15/images/kpinormal-2.gif'></span>";

@@ -131,13 +131,13 @@ namespace Yvand.EntraClaimsProvider.Administration
 
         protected void BtnAddConfig_Click(object sender, EventArgs e)
         {
-            EntraCP.CreateConfiguration(WebApplication);
+            EntraCP.CreateConfiguration(ClaimsProviderName, WebApplication);
             Response.Redirect(Request.RawUrl);
         }
 
         protected void BtnDeleteConfig_Click(object sender, EventArgs e)
         {
-            EntraCP.DeleteConfiguration(WebApplication);
+            EntraCP.DeleteConfiguration(ClaimsProviderName, WebApplication);
             Response.Redirect(Request.RawUrl);
         }
 

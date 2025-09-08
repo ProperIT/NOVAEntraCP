@@ -44,7 +44,7 @@ namespace Yvand.EntraClaimsProvider.Tests
             Logger = new TextWriterTraceListener($"{ClaimsProviderName}IntegrationTests.log");
             Trace.Listeners.Add(Logger);
             Trace.AutoFlush = true;
-            Trace.TraceInformation($"{DateTime.Now:s} [SETUP] Start integration tests of {EntraCP.ClaimsProviderName} {FileVersionInfo.GetVersionInfo(Assembly.GetAssembly(typeof(EntraCP)).Location).FileVersion}.");
+            Trace.TraceInformation($"{DateTime.Now:s} [SETUP] Start integration tests of {ClaimsProviderName} {FileVersionInfo.GetVersionInfo(Assembly.GetAssembly(typeof(EntraCP)).Location).FileVersion}.");
             Trace.TraceInformation($"{DateTime.Now:s} [SETUP] DataFile_EntraId_TestGroups: {DataFile_EntraId_TestGroups}");
             Trace.TraceInformation($"{DateTime.Now:s} [SETUP] DataFile_EntraId_TestUsers: {DataFile_EntraId_TestUsers}");
             Trace.TraceInformation($"{DateTime.Now:s} [SETUP] TestSiteCollectionName: {TestContext.Parameters["TestSiteCollectionName"]}");
@@ -58,7 +58,7 @@ namespace Yvand.EntraClaimsProvider.Tests
                 Trace.TraceInformation($"{DateTime.Now:s} [SETUP] SPTrust: {SPTrust.Name}");
             }
 
-            PersistedConfiguration = EntraCP.GetConfiguration(true);
+            PersistedConfiguration = EntraCP.GetConfiguration(ClaimsProviderName, true);
             if (PersistedConfiguration != null)
             {
                 OriginalSettings = PersistedConfiguration.Settings;
@@ -66,7 +66,7 @@ namespace Yvand.EntraClaimsProvider.Tests
             }
             else
             {
-                PersistedConfiguration = EntraCP.CreateConfiguration();
+                PersistedConfiguration = EntraCP.CreateConfiguration(ClaimsProviderName);
                 Trace.TraceInformation($"{DateTime.Now:s} [SETUP] Persisted configuration not found, created it");
             }
 
@@ -82,7 +82,7 @@ namespace Yvand.EntraClaimsProvider.Tests
                 {
                     foreach (SPAuthenticationProvider authenticationProviders in iisSetting.ClaimsAuthenticationProviders)
                     {
-                        if (String.Equals(authenticationProviders.ClaimProviderName, EntraCP.ClaimsProviderName, StringComparison.OrdinalIgnoreCase))
+                        if (String.Equals(authenticationProviders.ClaimProviderName, ClaimsProviderName, StringComparison.OrdinalIgnoreCase))
                         {
                             return true;
                         }
@@ -127,7 +127,7 @@ namespace Yvand.EntraClaimsProvider.Tests
             if (!SPSite.Exists(TestSiteCollUri))
             {
                 Trace.TraceInformation($"{DateTime.Now:s} [SETUP] Creating site collection {TestSiteCollUri.AbsoluteUri} with template '{spSiteTemplate}'...");
-                SPSite spSite = wa.Sites.Add(TestSiteCollUri.AbsoluteUri, EntraCP.ClaimsProviderName, EntraCP.ClaimsProviderName, 1033, spSiteTemplate, FarmAdmin, String.Empty, String.Empty);
+                SPSite spSite = wa.Sites.Add(TestSiteCollUri.AbsoluteUri, ClaimsProviderName, ClaimsProviderName, 1033, spSiteTemplate, FarmAdmin, String.Empty, String.Empty);
                 spSite.RootWeb.CreateDefaultAssociatedGroups(FarmAdmin, FarmAdmin, spSite.RootWeb.Title);
 
                 SPGroup membersGroup = spSite.RootWeb.AssociatedMemberGroup;
@@ -161,7 +161,7 @@ namespace Yvand.EntraClaimsProvider.Tests
                 Trace.TraceError($"{DateTime.Now:s} [SETUP] Unexpected error while restoring the original settings of LDAPCPSE configuration: {ex.Message}");
             }
 
-            Trace.TraceInformation($"{DateTime.Now:s} [SETUP] Integration tests of {EntraCP.ClaimsProviderName} {FileVersionInfo.GetVersionInfo(Assembly.GetAssembly(typeof(EntraCP)).Location).FileVersion} finished.");
+            Trace.TraceInformation($"{DateTime.Now:s} [SETUP] Integration tests of {ClaimsProviderName} {FileVersionInfo.GetVersionInfo(Assembly.GetAssembly(typeof(EntraCP)).Location).FileVersion} finished.");
             Trace.Flush();
             if (Logger != null)
             {
